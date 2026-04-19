@@ -13,6 +13,7 @@ import Create from "./pages/Create.tsx";
 import InvitationView from "./pages/InvitationView.tsx";
 import Inbox from "./pages/Inbox.tsx";
 import Checkout from "./pages/Checkout.tsx";
+import Admin from "./pages/Admin.tsx";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/edit/:id" element={<Create />} />
             <Route path="/i/:slug" element={<InvitationView />} />
             <Route path="/inbox/:id" element={<Inbox />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -2,11 +2,13 @@ import { Link } from "react-router-dom";
 import { Logo } from "./Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X } from "lucide-react";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { Menu, X, Shield } from "lucide-react";
 import { useState } from "react";
 
 export const SiteHeader = () => {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const [open, setOpen] = useState(false);
 
   return (
@@ -24,6 +26,11 @@ export const SiteHeader = () => {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <>
+              {isAdmin && (
+                <Button variant="ghost" asChild>
+                  <Link to="/admin"><Shield className="h-4 w-4" /> Admin</Link>
+                </Button>
+              )}
               <Button variant="ghost" asChild><Link to="/dashboard">Dashboard</Link></Button>
               <Button variant="outline" size="sm" onClick={signOut}>Sign out</Button>
             </>
@@ -53,7 +60,12 @@ export const SiteHeader = () => {
             <Link to="/templates" onClick={() => setOpen(false)} className="py-2 text-sm">Templates</Link>
             {user ? (
               <>
-                <Button variant="outline" asChild><Link to="/dashboard">Dashboard</Link></Button>
+                {isAdmin && (
+                  <Button variant="outline" asChild>
+                    <Link to="/admin" onClick={() => setOpen(false)}><Shield className="h-4 w-4" /> Admin</Link>
+                  </Button>
+                )}
+                <Button variant="outline" asChild><Link to="/dashboard" onClick={() => setOpen(false)}>Dashboard</Link></Button>
                 <Button variant="ghost" onClick={signOut}>Sign out</Button>
               </>
             ) : (

@@ -23,6 +23,7 @@ const Create = () => {
   const [params] = useSearchParams();
   const initialTemplate = params.get("template") || "emerald-noir";
   const { user, loading: authLoading } = useAuth();
+  const { hasPaid, loading: paidLoading } = usePaid();
   const navigate = useNavigate();
 
   const [templateId, setTemplateId] = useState(initialTemplate);
@@ -38,8 +39,16 @@ const Create = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !user) navigate(`/auth?next=/create?template=${templateId}`);
-  }, [user, authLoading, navigate, templateId]);
+    if (authLoading) return;
+    const nextPath = id ? `/edit/${id}` : `/create?template=${templateId}`;
+    if (!user) {
+      navigate(`/auth?next=${encodeURIComponent(nextPath)}`);
+      return;
+    }
+    if (!paidLoading && hasPaid === false) {
+      navigate(`/checkout?next=${encodeURIComponent(nextPath)}`);
+    }
+  }, [user, authLoading, hasPaid, paidLoading, navigate, templateId, id]);
 
   useEffect(() => {
     if (!id || !user) return;

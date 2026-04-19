@@ -44,10 +44,10 @@ export const Pricing = () => (
         </ul>
 
         <Button variant="gold" size="xl" className="w-full" asChild>
-          <Link to="/templates">Start Creating</Link>
+          <Link to="/checkout">Get Lifetime Access · ₹1,499</Link>
         </Button>
         <p className="text-center text-xs text-muted-foreground mt-4">
-          Secure payments · No hidden fees
+          Secured by Razorpay · UPI, cards, netbanking, wallets
         </p>
       </div>
     </div>

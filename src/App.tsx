@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Create from "./pages/Create.tsx";
 import InvitationView from "./pages/InvitationView.tsx";
 import Inbox from "./pages/Inbox.tsx";
+import Checkout from "./pages/Checkout.tsx";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/templates" element={<Templates />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="/create" element={<Create />} />
             <Route path="/edit/:id" element={<Create />} />
             <Route path="/i/:slug" element={<InvitationView />} />

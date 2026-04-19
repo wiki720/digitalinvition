@@ -14,7 +14,128 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      guest_messages: {
+        Row: {
+          attending: boolean | null
+          created_at: string
+          guest_count: number | null
+          guest_name: string
+          id: string
+          invitation_id: string
+          message: string
+        }
+        Insert: {
+          attending?: boolean | null
+          created_at?: string
+          guest_count?: number | null
+          guest_name: string
+          id?: string
+          invitation_id: string
+          message: string
+        }
+        Update: {
+          attending?: boolean | null
+          created_at?: string
+          guest_count?: number | null
+          guest_name?: string
+          id?: string
+          invitation_id?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_messages_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitations: {
+        Row: {
+          bride_name: string
+          created_at: string
+          dress_code: string | null
+          groom_name: string
+          hero_image_url: string | null
+          id: string
+          is_published: boolean
+          message: string | null
+          slug: string
+          template_id: string
+          updated_at: string
+          user_id: string
+          venue_address: string
+          venue_map_url: string | null
+          venue_name: string
+          wedding_date: string
+        }
+        Insert: {
+          bride_name: string
+          created_at?: string
+          dress_code?: string | null
+          groom_name: string
+          hero_image_url?: string | null
+          id?: string
+          is_published?: boolean
+          message?: string | null
+          slug: string
+          template_id?: string
+          updated_at?: string
+          user_id: string
+          venue_address: string
+          venue_map_url?: string | null
+          venue_name: string
+          wedding_date: string
+        }
+        Update: {
+          bride_name?: string
+          created_at?: string
+          dress_code?: string | null
+          groom_name?: string
+          hero_image_url?: string | null
+          id?: string
+          is_published?: boolean
+          message?: string | null
+          slug?: string
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+          venue_address?: string
+          venue_map_url?: string | null
+          venue_name?: string
+          wedding_date?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          has_paid: boolean
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          has_paid?: boolean
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          has_paid?: boolean
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

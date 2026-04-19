@@ -5,6 +5,7 @@ import { TemplatePreview } from "@/components/TemplatePreview";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { usePaid } from "@/hooks/usePaid";
 
 const badgeStyles: Record<string, string> = {
   "Limited Edition": "bg-gold/20 text-gold border-gold/40",
@@ -15,12 +16,16 @@ const badgeStyles: Record<string, string> = {
 const Templates = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { hasPaid } = usePaid();
 
   const select = (id: string) => {
+    const next = `/create?template=${id}`;
     if (!user) {
-      navigate(`/auth?next=/create?template=${id}`);
+      navigate(`/auth?next=${encodeURIComponent(next)}`);
+    } else if (!hasPaid) {
+      navigate(`/checkout?next=${encodeURIComponent(next)}`);
     } else {
-      navigate(`/create?template=${id}`);
+      navigate(next);
     }
   };
 

@@ -6,13 +6,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
+import { Trash2, CheckCircle2, XCircle, ExternalLink, Gift, IndianRupee, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 type Profile = { id: string; user_id: string; display_name: string | null; has_paid: boolean; created_at: string };
 type Invitation = { id: string; slug: string; bride_name: string; groom_name: string; user_id: string; template_id: string; created_at: string; is_published: boolean };
 type Payment = { id: string; user_id: string; amount: number; currency: string; status: string; razorpay_order_id: string; razorpay_payment_id: string | null; created_at: string };
+type Settings = { id: string; payments_enabled: boolean; price_inr: number };
 
 const Admin = () => {
   const { user, loading: authLoading } = useAuth();
@@ -22,7 +26,10 @@ const Admin = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [priceInput, setPriceInput] = useState<string>("");
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth?next=/admin");
@@ -39,20 +46,55 @@ const Admin = () => {
 
   const loadAll = async () => {
     setLoading(true);
-    const [p, i, pay] = await Promise.all([
+    const [p, i, pay, s] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("invitations").select("*").order("created_at", { ascending: false }),
       supabase.from("payments").select("*").order("created_at", { ascending: false }),
+      supabase.from("app_settings").select("id, payments_enabled, price_inr").limit(1).maybeSingle(),
     ]);
     if (p.error) toast.error(p.error.message); else setProfiles(p.data || []);
     if (i.error) toast.error(i.error.message); else setInvitations(i.data || []);
     if (pay.error) toast.error(pay.error.message); else setPayments(pay.data || []);
+    if (s.data) {
+      setSettings(s.data as Settings);
+      setPriceInput(String(s.data.price_inr));
+    }
     setLoading(false);
   };
 
   useEffect(() => {
     if (isAdmin) loadAll();
   }, [isAdmin]);
+
+  const togglePayments = async (enabled: boolean) => {
+    if (!settings) return;
+    setSavingSettings(true);
+    const { error } = await supabase
+      .from("app_settings")
+      .update({ payments_enabled: enabled })
+      .eq("id", settings.id);
+    setSavingSettings(false);
+    if (error) return toast.error(error.message);
+    setSettings({ ...settings, payments_enabled: enabled });
+    toast.success(enabled ? "Payments enabled — users will be charged" : "Payments OFF — all users get free access");
+  };
+
+  const savePrice = async () => {
+    if (!settings) return;
+    const n = parseInt(priceInput, 10);
+    if (Number.isNaN(n) || n < 1 || n > 100000) {
+      return toast.error("Enter a price between ₹1 and ₹100,000");
+    }
+    setSavingSettings(true);
+    const { error } = await supabase
+      .from("app_settings")
+      .update({ price_inr: n })
+      .eq("id", settings.id);
+    setSavingSettings(false);
+    if (error) return toast.error(error.message);
+    setSettings({ ...settings, price_inr: n });
+    toast.success(`Price updated to ₹${n.toLocaleString("en-IN")}`);
+  };
 
   const togglePaid = async (p: Profile) => {
     const { error } = await supabase.from("profiles").update({ has_paid: !p.has_paid }).eq("id", p.id);
@@ -86,6 +128,8 @@ const Admin = () => {
     );
   }
 
+  const paymentsOn = settings?.payments_enabled !== false;
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -93,15 +137,105 @@ const Admin = () => {
         <div className="mb-8">
           <p className="text-gold text-xs tracking-[0.3em] uppercase mb-2">Administrator</p>
           <h1 className="font-display text-4xl md:text-5xl">Admin Panel</h1>
-          <p className="text-muted-foreground mt-2">Manage users, invitations, and payments.</p>
+          <p className="text-muted-foreground mt-2">Manage users, invitations, payments, and pricing.</p>
         </div>
 
-        <Tabs defaultValue="users">
+        <Tabs defaultValue="settings">
           <TabsList>
+            <TabsTrigger value="settings">Payment Settings</TabsTrigger>
             <TabsTrigger value="users">Users ({profiles.length})</TabsTrigger>
             <TabsTrigger value="invitations">Invitations ({invitations.length})</TabsTrigger>
             <TabsTrigger value="payments">Payments ({payments.length})</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="settings" className="mt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Payments toggle */}
+              <div className="rounded-xl border-2 border-gold/30 bg-card/40 backdrop-blur p-6 shadow-deep">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className={`h-12 w-12 rounded-full flex items-center justify-center ${paymentsOn ? "bg-gold/10 text-gold" : "bg-emerald-500/10 text-emerald-400"}`}>
+                    {paymentsOn ? <IndianRupee className="h-6 w-6" /> : <Gift className="h-6 w-6" />}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-display text-2xl">Payments</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {paymentsOn
+                        ? "Users are charged the price below to unlock access."
+                        : "Offer mode: ALL users get free lifetime access. No charge."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 rounded-lg bg-background/40 border border-gold/10">
+                  <div>
+                    <Label htmlFor="payments-toggle" className="text-base font-medium">
+                      {paymentsOn ? "Payments are ON" : "Payments are OFF (free for everyone)"}
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Toggle off to run a free-access promotion.
+                    </p>
+                  </div>
+                  <Switch
+                    id="payments-toggle"
+                    checked={paymentsOn}
+                    onCheckedChange={togglePayments}
+                    disabled={savingSettings || !settings}
+                  />
+                </div>
+
+                {!paymentsOn && (
+                  <div className="mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300">
+                    🎉 Free-access offer is live. New signups will skip checkout and get instant access.
+                  </div>
+                )}
+              </div>
+
+              {/* Custom price */}
+              <div className="rounded-xl border-2 border-gold/30 bg-card/40 backdrop-blur p-6 shadow-deep">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="h-12 w-12 rounded-full bg-gold/10 text-gold flex items-center justify-center">
+                    <IndianRupee className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-display text-2xl">Custom Price</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Set the lifetime-access price (in INR). Applies to checkout & landing page instantly.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="price-input">Price in ₹</Label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                      <Input
+                        id="price-input"
+                        type="number"
+                        min={1}
+                        max={100000}
+                        value={priceInput}
+                        onChange={(e) => setPriceInput(e.target.value)}
+                        className="pl-7 text-lg font-display"
+                        placeholder="1499"
+                      />
+                    </div>
+                    <Button
+                      onClick={savePrice}
+                      disabled={savingSettings || !settings || priceInput === String(settings?.price_inr)}
+                      variant="gold"
+                    >
+                      {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4 mr-1.5" /> Save</>}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Current: <span className="text-gold font-medium">₹{settings?.price_inr.toLocaleString("en-IN") ?? "—"}</span>
+                    {" · "}Suggested: ₹499 / ₹999 / ₹1,499 / ₹2,499
+                  </p>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
 
           <TabsContent value="users" className="mt-6">
             <div className="rounded-xl border border-gold/20 overflow-hidden">

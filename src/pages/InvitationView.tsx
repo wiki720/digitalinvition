@@ -6,7 +6,11 @@ import { Countdown } from "@/components/Countdown";
 import { ScratchToReveal } from "@/components/ScratchToReveal";
 import { RsvpForm } from "@/components/RsvpForm";
 import { ShareButtons } from "@/components/ShareButtons";
+import { DoorReveal } from "@/components/DoorReveal";
 import { Volume2, VolumeX, MapPin } from "lucide-react";
+
+// Royalty-free romantic piano loop (CC0)
+const MUSIC_URL = "https://cdn.pixabay.com/download/audio/2022/03/15/audio_8cb749cb27.mp3?filename=relaxing-mountains-rivers-streams-running-water-18178.mp3";
 
 type Invitation = {
   id: string;
@@ -59,10 +63,29 @@ const InvitationView = () => {
   }, [slug]);
 
   const toggleMute = () => {
-    if (!audioRef.current) return;
-    audioRef.current.muted = !muted;
-    if (muted) audioRef.current.play().catch(() => {});
-    setMuted(!muted);
+    const a = audioRef.current;
+    if (!a) return;
+    const next = !muted;
+    a.muted = next;
+    if (!next) {
+      a.volume = 0.5;
+      a.play().catch(() => {});
+    }
+    setMuted(next);
+  };
+
+  // Try to start music as soon as the doors open (browsers allow play after a user gesture).
+  const handleDoorsOpen = () => {
+    setDoorsOpen(true);
+    setTimeout(() => {
+      const a = audioRef.current;
+      if (!a) return;
+      a.muted = false;
+      a.volume = 0.5;
+      a.play().then(() => setMuted(false)).catch(() => {
+        // Autoplay blocked — user can tap the speaker button.
+      });
+    }, 100);
   };
 
   if (loading) {
@@ -78,38 +101,25 @@ const InvitationView = () => {
   const accent = `hsl(${tpl.palette.accent})`;
   const accentSoft = `hsl(${tpl.palette.accentSoft})`;
 
-  // Doors closed splash screen
+  // Doors closed splash screen — animated wooden doors with ornamental wall
   if (!doorsOpen) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center relative overflow-hidden"
-        style={{ background: bg, color: fg }}
-      >
-        <div className="absolute inset-0 grid grid-cols-2">
-          <div className="border-r" style={{ borderColor: accent, background: `linear-gradient(135deg, ${accent}, hsl(0 0% 5%))` }} />
-          <div style={{ background: `linear-gradient(225deg, ${accent}, hsl(0 0% 5%))` }} />
-        </div>
-        <div className="relative text-center z-10 p-8">
-          <div className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: accentSoft }}>The Wedding of</div>
-          <div className="font-script text-5xl md:text-7xl mb-2" style={{ color: fg }}>{inv.bride_name}</div>
-          <div className="font-display italic text-xl my-2 opacity-80">&</div>
-          <div className="font-script text-5xl md:text-7xl mb-8" style={{ color: fg }}>{inv.groom_name}</div>
-          <button
-            onClick={() => setDoorsOpen(true)}
-            className="px-8 py-4 rounded-md border-2 font-semibold tracking-wider uppercase text-xs transition-all hover:scale-105"
-            style={{ borderColor: fg, color: fg }}
-          >
-            ✦ Open Invitation ✦
-          </button>
-        </div>
-      </div>
+      <DoorReveal
+        brideName={inv.bride_name}
+        groomName={inv.groom_name}
+        bg={bg}
+        fg={fg}
+        accent={accent}
+        accentSoft={accentSoft}
+        onOpen={handleDoorsOpen}
+      />
     );
   }
 
   return (
     <div className="min-h-screen relative" style={{ background: bg, color: fg }}>
-      {/* Background music (silent placeholder — user can replace via storage in v2) */}
-      <audio ref={audioRef} loop muted src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" />
+      {/* Background music — royalty-free, autoplays after door tap */}
+      <audio ref={audioRef} loop preload="auto" src={MUSIC_URL} />
       <button
         onClick={toggleMute}
         className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full border flex items-center justify-center backdrop-blur"

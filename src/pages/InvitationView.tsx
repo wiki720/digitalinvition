@@ -5,6 +5,7 @@ import { getTemplate } from "@/lib/templates";
 import { Countdown } from "@/components/Countdown";
 import { ScratchToReveal } from "@/components/ScratchToReveal";
 import { RsvpForm } from "@/components/RsvpForm";
+import { ShareButtons } from "@/components/ShareButtons";
 import { Volume2, VolumeX, MapPin } from "lucide-react";
 
 type Invitation = {
@@ -199,6 +200,20 @@ const InvitationView = () => {
               <h2 className="font-display text-3xl md:text-4xl">Send Your Wishes</h2>
             </div>
             <RsvpForm invitationId={inv.id} accent={accent} fg={fg} />
+          </div>
+        </section>
+      )}
+
+      {/* Share */}
+      {inv.id !== "demo" && (
+        <section className="py-16 px-8">
+          <div className="max-w-xl mx-auto">
+            <ShareButtons
+              url={typeof window !== "undefined" ? window.location.href : ""}
+              title={`${inv.bride_name} & ${inv.groom_name} — Wedding Invitation`}
+              accent={accent}
+              fg={fg}
+            />
           </div>
         </section>
       )}

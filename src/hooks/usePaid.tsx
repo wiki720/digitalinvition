@@ -8,12 +8,26 @@ export const usePaid = () => {
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
+    setLoading(true);
+
+    // Check global payments toggle first — when off, everyone has access
+    const { data: settings } = await supabase
+      .from("app_settings")
+      .select("payments_enabled")
+      .limit(1)
+      .maybeSingle();
+
+    if (settings && settings.payments_enabled === false) {
+      setHasPaid(true);
+      setLoading(false);
+      return;
+    }
+
     if (!user) {
       setHasPaid(false);
       setLoading(false);
       return;
     }
-    setLoading(true);
     const { data } = await supabase
       .from("profiles")
       .select("has_paid")

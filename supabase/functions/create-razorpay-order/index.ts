@@ -11,8 +11,6 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const PLAN_AMOUNT_PAISE = 149900; // ₹1,499.00
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -37,6 +35,27 @@ Deno.serve(async (req) => {
       });
     }
 
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Read live app settings (price + payments toggle)
+    const { data: settings } = await admin
+      .from("app_settings")
+      .select("payments_enabled, price_inr")
+      .limit(1)
+      .maybeSingle();
+
+    // If admin disabled payments → grant access for free, no Razorpay call
+    if (settings && settings.payments_enabled === false) {
+      await admin.from("profiles").update({ has_paid: true }).eq("user_id", user.id);
+      return new Response(
+        JSON.stringify({ free_access: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const priceInr = settings?.price_inr ?? 1499;
+    const amountPaise = priceInr * 100;
+
     // Create Razorpay order
     const auth = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);
     const receipt = `dinv_${user.id.slice(0, 8)}_${Date.now().toString(36)}`;
@@ -47,10 +66,10 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        amount: PLAN_AMOUNT_PAISE,
+        amount: amountPaise,
         currency: "INR",
         receipt,
-        notes: { user_id: user.id, plan: "all_access_1499" },
+        notes: { user_id: user.id, plan: `all_access_${priceInr}` },
       }),
     });
 
@@ -63,22 +82,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Persist with service role
-    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { error: insertErr } = await admin.from("payments").insert({
       user_id: user.id,
       razorpay_order_id: orderData.id,
-      amount: PLAN_AMOUNT_PAISE,
+      amount: amountPaise,
       currency: "INR",
       status: "created",
-      plan: "all_access_1499",
+      plan: `all_access_${priceInr}`,
     });
     if (insertErr) console.error("Insert payment error:", insertErr);
 
     return new Response(
       JSON.stringify({
         order_id: orderData.id,
-        amount: PLAN_AMOUNT_PAISE,
+        amount: amountPaise,
         currency: "INR",
         key_id: RAZORPAY_KEY_ID,
       }),

@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          id: string
+          payments_enabled: boolean
+          price_inr: number
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          payments_enabled?: boolean
+          price_inr?: number
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          payments_enabled?: boolean
+          price_inr?: number
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       guest_messages: {
         Row: {
           attending: boolean | null

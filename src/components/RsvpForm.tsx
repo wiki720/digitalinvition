@@ -21,16 +21,24 @@ export const RsvpForm = ({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (attending === null) return toast.error("Please confirm if you'll attend");
+    const trimmedName = name.trim();
+    const trimmedMessage = msg.trim();
+    if (trimmedName.length < 1 || trimmedName.length > 100) {
+      return toast.error("Please enter a name up to 100 characters");
+    }
+    if (trimmedMessage.length < 1 || trimmedMessage.length > 1000) {
+      return toast.error("Please enter a message up to 1,000 characters");
+    }
     setSubmitting(true);
     const { error } = await supabase.from("guest_messages").insert({
       invitation_id: invitationId,
-      guest_name: name,
-      message: msg,
+      guest_name: trimmedName,
+      message: trimmedMessage,
       attending,
-      guest_count: count,
+      guest_count: Math.min(20, Math.max(1, count)),
     });
     setSubmitting(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error("We couldn't send your RSVP. Please try again.");
     setDone(true);
   };
 

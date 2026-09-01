@@ -132,15 +132,15 @@ const Create = () => {
       hero_image_url: heroImage || null,
     };
     try {
+      const table = supabase.from("invitations") as any;
       if (id) {
-        const { error } = await supabase.from("invitations").update(payload).eq("id", id);
+        const { error } = await table.update(payload).eq("id", id);
         if (error) throw error;
         toast.success("Invitation updated");
         navigate("/dashboard");
       } else {
         const slug = slugify(`${bride}-${groom}`);
-        const { data, error } = await supabase
-          .from("invitations")
+        const { data, error } = await table
           .insert({ ...payload, slug })
           .select()
           .single();

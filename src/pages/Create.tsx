@@ -9,9 +9,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { TEMPLATES, getTemplate } from "@/lib/templates";
+import { TEMPLATES, getTemplate, canUseTemplate } from "@/lib/templates";
 import { TemplatePreview } from "@/components/TemplatePreview";
 import { toast } from "sonner";
+import type { Plan } from "@/lib/templates";
+
+const EVENT_TYPES = [
+  "Wedding",
+  "Engagement",
+  "Wedding & Reception",
+  "Reception Only",
+  "Birthday",
+  "Opening Ceremony",
+  "Anniversary",
+  "Housewarming",
+  "Party",
+  "Baby Shower",
+  "Custom",
+];
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 40) +
@@ -19,14 +34,15 @@ const slugify = (s: string) =>
   Math.random().toString(36).slice(2, 7);
 
 const Create = () => {
-  const { id } = useParams();        // edit mode
+  const { id } = useParams();
   const [params] = useSearchParams();
   const initialTemplate = params.get("template") || "emerald-noir";
   const { user, loading: authLoading } = useAuth();
-  const { hasPaid, loading: paidLoading } = usePaid();
+  const { hasPaid, plan: userPlan, loading: paidLoading } = usePaid();
   const navigate = useNavigate();
 
   const [templateId, setTemplateId] = useState(initialTemplate);
+  const [eventType, setEventType] = useState("Wedding");
   const [bride, setBride] = useState("");
   const [groom, setGroom] = useState("");
   const [date, setDate] = useState("");
@@ -53,13 +69,17 @@ const Create = () => {
   useEffect(() => {
     if (!id || !user) return;
     (async () => {
-      const { data, error } = await supabase.from("invitations").select("*").eq("id", id).maybeSingle();
+      const { data, error } = await supabase.from("invitations").select("*").eq("id", id).maybeSingle() as {
+        data: Record<string, any> | null;
+        error: any;
+      };
       if (error || !data) {
         toast.error("Invitation not found");
         navigate("/dashboard");
         return;
       }
       setTemplateId(data.template_id);
+      setEventType(data.event_type || "Wedding");
       setBride(data.bride_name);
       setGroom(data.groom_name);
       setDate(new Date(data.wedding_date).toISOString().slice(0, 16));
@@ -83,13 +103,24 @@ const Create = () => {
     toast.success("Image uploaded");
   };
 
+  const tpl = getTemplate(templateId);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    // If selected template requires Royal and user only has Classic, upsell
+    if (!canUseTemplate(templateId, userPlan)) {
+      const next = id ? `/edit/${id}` : `/create?template=${templateId}`;
+      navigate(`/checkout?next=${encodeURIComponent(next)}&plan=royal`);
+      return;
+    }
+
     setSubmitting(true);
     const payload = {
       user_id: user.id,
       template_id: templateId,
+      event_type: eventType,
       bride_name: bride,
       groom_name: groom,
       wedding_date: new Date(date).toISOString(),
@@ -101,15 +132,15 @@ const Create = () => {
       hero_image_url: heroImage || null,
     };
     try {
+      const table = supabase.from("invitations") as any;
       if (id) {
-        const { error } = await supabase.from("invitations").update(payload).eq("id", id);
+        const { error } = await table.update(payload).eq("id", id);
         if (error) throw error;
         toast.success("Invitation updated");
         navigate("/dashboard");
       } else {
         const slug = slugify(`${bride}-${groom}`);
-        const { data, error } = await supabase
-          .from("invitations")
+        const { data, error } = await table
           .insert({ ...payload, slug })
           .select()
           .single();
@@ -124,7 +155,14 @@ const Create = () => {
     }
   };
 
-  const tpl = getTemplate(templateId);
+  const primaryLabel = eventType === "Wedding" || eventType === "Wedding & Reception" || eventType === "Engagement"
+    ? "Bride's / Partner 1 Name"
+    : eventType === "Birthday" || eventType === "Baby Shower"
+      ? "Honoree's Name"
+      : "Host / Partner 1 Name";
+  const secondaryLabel = eventType === "Wedding" || eventType === "Wedding & Reception" || eventType === "Engagement"
+    ? "Groom's / Partner 2 Name"
+    : "Co-host / Partner 2 Name (optional)";
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,6 +176,19 @@ const Create = () => {
         <div className="grid lg:grid-cols-[1fr_320px] gap-8">
           <form onSubmit={submit} className="bg-card/40 backdrop-blur rounded-xl border border-gold/20 p-7 space-y-5">
             <div>
+              <Label>Event Type</Label>
+              <select
+                value={eventType}
+                onChange={(e) => setEventType(e.target.value)}
+                className="mt-1.5 w-full h-10 rounded-md border border-input bg-input px-3 text-sm"
+              >
+                {EVENT_TYPES.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
               <Label>Template</Label>
               <select
                 value={templateId}
@@ -145,24 +196,29 @@ const Create = () => {
                 className="mt-1.5 w-full h-10 rounded-md border border-input bg-input px-3 text-sm"
               >
                 {TEMPLATES.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
+                  <option key={t.id} value={t.id}>{t.name} · {t.plan === "royal" ? "Royal" : "Classic"}</option>
                 ))}
               </select>
+              {!canUseTemplate(templateId, userPlan) && (
+                <p className="text-xs text-gold mt-2">
+                  This template is part of the Royal plan. You’ll be asked to upgrade before saving.
+                </p>
+              )}
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="bride">Bride's Name</Label>
+                <Label htmlFor="bride">{primaryLabel}</Label>
                 <Input id="bride" value={bride} onChange={(e) => setBride(e.target.value)} required className="mt-1.5" />
               </div>
               <div>
-                <Label htmlFor="groom">Groom's Name</Label>
-                <Input id="groom" value={groom} onChange={(e) => setGroom(e.target.value)} required className="mt-1.5" />
+                <Label htmlFor="groom">{secondaryLabel}</Label>
+                <Input id="groom" value={groom} onChange={(e) => setGroom(e.target.value)} className="mt-1.5" />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="date">Wedding Date & Time</Label>
+              <Label htmlFor="date">Event Date & Time</Label>
               <Input id="date" type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} required className="mt-1.5" />
             </div>
 
@@ -188,7 +244,7 @@ const Create = () => {
 
             <div>
               <Label htmlFor="msg">Personal Message (optional)</Label>
-              <Textarea id="msg" value={message} onChange={(e) => setMessage(e.target.value)} rows={3} className="mt-1.5" placeholder="A word from the couple to your guests…" />
+              <Textarea id="msg" value={message} onChange={(e) => setMessage(e.target.value)} rows={3} className="mt-1.5" placeholder="A word from the hosts to your guests…" />
             </div>
 
             <div>
@@ -206,6 +262,7 @@ const Create = () => {
             <p className="text-xs text-muted-foreground mb-3 tracking-widest uppercase">Live Style Preview</p>
             <TemplatePreview template={tpl} />
             <p className="text-center text-xs text-muted-foreground mt-3">{tpl.name}</p>
+            <p className="text-center text-[10px] uppercase tracking-wider text-gold mt-1">{tpl.plan} plan</p>
           </aside>
         </div>
       </main>

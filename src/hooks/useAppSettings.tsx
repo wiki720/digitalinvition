@@ -5,6 +5,8 @@ export type AppSettings = {
   id: string;
   payments_enabled: boolean;
   price_inr: number;
+  classic_price_inr: number;
+  royal_price_inr: number;
 };
 
 export const useAppSettings = () => {
@@ -15,10 +17,10 @@ export const useAppSettings = () => {
     setLoading(true);
     const { data } = await supabase
       .from("app_settings")
-      .select("id, payments_enabled, price_inr")
+      .select("id, payments_enabled, price_inr, classic_price_inr, royal_price_inr")
       .limit(1)
-      .maybeSingle();
-    setSettings(data as AppSettings | null);
+      .maybeSingle() as { data: AppSettings | null };
+    setSettings(data);
     setLoading(false);
   };
 

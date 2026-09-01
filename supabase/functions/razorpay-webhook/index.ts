@@ -55,10 +55,10 @@ Deno.serve(async (req) => {
 
       const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-      // Look up payment row to find user_id
+      // Look up payment row to find user_id and plan
       const { data: payRow } = await admin
         .from("payments")
-        .select("user_id")
+        .select("user_id, plan")
         .eq("razorpay_order_id", orderId)
         .maybeSingle();
 
@@ -68,13 +68,15 @@ Deno.serve(async (req) => {
         return new Response("ok", { status: 200 });
       }
 
+      const plan = payRow?.plan === "royal" ? "royal" : "classic";
+
       // Idempotent updates
       await admin
         .from("payments")
         .update({ razorpay_payment_id: paymentId, status: "captured" })
         .eq("razorpay_order_id", orderId);
 
-      await admin.from("profiles").update({ has_paid: true }).eq("user_id", userId);
+      await admin.from("profiles").update({ has_paid: true, plan }).eq("user_id", userId);
     } else if (event.event === "payment.failed") {
       const payment = event.payload?.payment?.entity;
       if (payment?.order_id) {

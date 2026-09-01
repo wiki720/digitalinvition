@@ -37,23 +37,36 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Read live app settings (price + payments toggle)
+    // Read requested plan (classic / royal)
+    let plan: "classic" | "royal" = "classic";
+    try {
+      const body = await req.clone().json();
+      if (body?.plan === "royal" || body?.plan === "classic") plan = body.plan;
+    } catch {
+      const url = new URL(req.url);
+      const qp = url.searchParams.get("plan");
+      if (qp === "royal" || qp === "classic") plan = qp;
+    }
+
+    // Read live app settings (prices + payments toggle)
     const { data: settings } = await admin
       .from("app_settings")
-      .select("payments_enabled, price_inr")
+      .select("payments_enabled, classic_price_inr, royal_price_inr")
       .limit(1)
       .maybeSingle();
 
-    // If admin disabled payments → grant access for free, no Razorpay call
+    // If admin disabled payments → grant full Royal access for free
     if (settings && settings.payments_enabled === false) {
-      await admin.from("profiles").update({ has_paid: true }).eq("user_id", user.id);
+      await admin.from("profiles").update({ has_paid: true, plan: "royal" }).eq("user_id", user.id);
       return new Response(
-        JSON.stringify({ free_access: true }),
+        JSON.stringify({ free_access: true, plan: "royal" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const priceInr = settings?.price_inr ?? 1499;
+    const priceInr = plan === "royal"
+      ? (settings?.royal_price_inr ?? 1499)
+      : (settings?.classic_price_inr ?? 1199);
     const amountPaise = priceInr * 100;
 
     // Create Razorpay order
@@ -88,7 +101,8 @@ Deno.serve(async (req) => {
       amount: amountPaise,
       currency: "INR",
       status: "created",
-      plan: `all_access_${priceInr}`,
+      plan,
+      notes: { user_id: user.id, plan },
     });
     if (insertErr) console.error("Insert payment error:", insertErr);
 
@@ -98,6 +112,7 @@ Deno.serve(async (req) => {
         amount: amountPaise,
         currency: "INR",
         key_id: RAZORPAY_KEY_ID,
+        plan,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

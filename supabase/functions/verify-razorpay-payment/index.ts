@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
     // Confirm the order belongs to this user
     const { data: pay, error: payErr } = await admin
       .from("payments")
-      .select("user_id, status")
+      .select("user_id, status, plan")
       .eq("razorpay_order_id", razorpay_order_id)
       .maybeSingle();
     if (payErr || !pay) {
@@ -99,10 +99,11 @@ Deno.serve(async (req) => {
       })
       .eq("razorpay_order_id", razorpay_order_id);
 
-    // Flip profile.has_paid
+    // Grant access and store purchased plan
+    const plan = pay.plan === "royal" ? "royal" : "classic";
     await admin
       .from("profiles")
-      .update({ has_paid: true })
+      .update({ has_paid: true, plan })
       .eq("user_id", user.id);
 
     return new Response(JSON.stringify({ ok: true }), {

@@ -36,7 +36,7 @@ export const usePaid = () => {
       .from("profiles")
       .select("has_paid, plan")
       .eq("user_id", user.id)
-      .maybeSingle();
+      .maybeSingle() as { data: { has_paid: boolean; plan: string | null } | null };
     setHasPaid(!!data?.has_paid);
     setPlan((data?.plan as Plan) || null);
     setLoading(false);

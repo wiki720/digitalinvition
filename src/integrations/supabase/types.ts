@@ -16,23 +16,29 @@ export type Database = {
     Tables: {
       app_settings: {
         Row: {
+          classic_price_inr: number | null
           id: string
           payments_enabled: boolean
           price_inr: number
+          royal_price_inr: number | null
           singleton: boolean
           updated_at: string
         }
         Insert: {
+          classic_price_inr?: number | null
           id?: string
           payments_enabled?: boolean
           price_inr?: number
+          royal_price_inr?: number | null
           singleton?: boolean
           updated_at?: string
         }
         Update: {
+          classic_price_inr?: number | null
           id?: string
           payments_enabled?: boolean
           price_inr?: number
+          royal_price_inr?: number | null
           singleton?: boolean
           updated_at?: string
         }
@@ -81,6 +87,7 @@ export type Database = {
           bride_name: string
           created_at: string
           dress_code: string | null
+          event_type: string | null
           groom_name: string
           hero_image_url: string | null
           id: string
@@ -99,6 +106,7 @@ export type Database = {
           bride_name: string
           created_at?: string
           dress_code?: string | null
+          event_type?: string | null
           groom_name: string
           hero_image_url?: string | null
           id?: string
@@ -117,6 +125,7 @@ export type Database = {
           bride_name?: string
           created_at?: string
           dress_code?: string | null
+          event_type?: string | null
           groom_name?: string
           hero_image_url?: string | null
           id?: string
@@ -181,6 +190,7 @@ export type Database = {
           display_name: string | null
           has_paid: boolean
           id: string
+          plan: string | null
           updated_at: string
           user_id: string
         }
@@ -189,6 +199,7 @@ export type Database = {
           display_name?: string | null
           has_paid?: boolean
           id?: string
+          plan?: string | null
           updated_at?: string
           user_id: string
         }
@@ -197,6 +208,7 @@ export type Database = {
           display_name?: string | null
           has_paid?: boolean
           id?: string
+          plan?: string | null
           updated_at?: string
           user_id?: string
         }

@@ -101,7 +101,8 @@ Deno.serve(async (req) => {
       amount: amountPaise,
       currency: "INR",
       status: "created",
-      plan: `all_access_${priceInr}`,
+      plan,
+      notes: { user_id: user.id, plan },
     });
     if (insertErr) console.error("Insert payment error:", insertErr);
 
@@ -111,6 +112,7 @@ Deno.serve(async (req) => {
         amount: amountPaise,
         currency: "INR",
         key_id: RAZORPAY_KEY_ID,
+        plan,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

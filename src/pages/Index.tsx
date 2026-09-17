@@ -1,8 +1,11 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Hero } from "@/components/landing/Hero";
-import { HowItWorks } from "@/components/landing/HowItWorks";
+import { Collections } from "@/components/landing/Collections";
 import { Features } from "@/components/landing/Features";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { Portfolio } from "@/components/landing/Portfolio";
+import { Personalization } from "@/components/landing/Personalization";
 import { Comparison } from "@/components/landing/Comparison";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Pricing } from "@/components/landing/Pricing";
@@ -14,8 +17,11 @@ const Index = () => (
     <SiteHeader />
     <main>
       <Hero />
-      <HowItWorks />
+      <Collections />
       <Features />
+      <HowItWorks />
+      <Portfolio />
+      <Personalization />
       <Comparison />
       <Testimonials />
       <Pricing />

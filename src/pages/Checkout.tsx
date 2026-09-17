@@ -100,7 +100,7 @@ const Checkout = () => {
         amount: data.amount,
         currency: data.currency,
         order_id: data.order_id,
-        name: "Digital Invition",
+        name: "Zareqia",
         description: "Lifetime All-Access · 8 premium templates",
         prefill: { email: user.email ?? "" },
         theme: { color: "#0F3D2E" },
@@ -115,7 +115,7 @@ const Checkout = () => {
               { body: resp },
             );
             if (vErr) throw vErr;
-            toast.success("Payment successful — welcome to Digital Invition!");
+            toast.success("Payment successful — welcome to Zareqia!");
             await refresh();
             navigate(next);
           } catch (e) {

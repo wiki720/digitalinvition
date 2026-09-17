@@ -1,8 +1,8 @@
 const steps = [
-  { n: "01", title: "Choose Template", desc: "Browse 8 premium, uniquely crafted designs" },
-  { n: "02", title: "Make Payment", desc: "Secure one-time payment, no subscriptions" },
-  { n: "03", title: "Fill a Simple Form", desc: "Enter your wedding details — names, venue, dates" },
-  { n: "04", title: "Share Your Link", desc: "Get a unique invitation link — share anywhere" },
+  { n: "01", title: "Choose Your Design", desc: "Browse our premium, uniquely crafted collection" },
+  { n: "02", title: "Share Your Details", desc: "Names, dates, venue, events and photos" },
+  { n: "03", title: "We Personalise It", desc: "Your invitation, styled around your story" },
+  { n: "04", title: "Share Your Invitation", desc: "One link — WhatsApp, email, anywhere" },
 ];
 
 export const HowItWorks = () => (

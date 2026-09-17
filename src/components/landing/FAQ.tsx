@@ -10,7 +10,7 @@ const faqs = [
 ];
 
 export const FAQ = () => (
-  <section className="py-24 md:py-32 bg-gradient-emerald">
+  <section id="faq" className="py-24 md:py-32 bg-gradient-emerald">
     <div className="container max-w-3xl">
       <div className="text-center mb-12">
         <p className="text-gold text-xs tracking-[0.3em] uppercase mb-3">Got Questions?</p>

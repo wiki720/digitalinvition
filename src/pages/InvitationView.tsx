@@ -229,7 +229,7 @@ const InvitationView = () => {
       )}
 
       <footer className="py-10 text-center text-xs opacity-60">
-        Made with ✦ on Digital Invition
+        Made with ✦ on Zareqia
       </footer>
     </div>
   );

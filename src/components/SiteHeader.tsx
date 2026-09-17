@@ -17,10 +17,10 @@ export const SiteHeader = () => {
         <Logo />
 
         <nav className="hidden md:flex items-center gap-8 text-sm">
-          <a href="/#features" className="text-muted-foreground hover:text-gold transition-colors">Features</a>
+          <Link to="/templates" className="text-muted-foreground hover:text-gold transition-colors">Designs</Link>
+          <a href="/#portfolio" className="text-muted-foreground hover:text-gold transition-colors">Portfolio</a>
           <a href="/#how" className="text-muted-foreground hover:text-gold transition-colors">How It Works</a>
           <a href="/#pricing" className="text-muted-foreground hover:text-gold transition-colors">Pricing</a>
-          <Link to="/templates" className="text-muted-foreground hover:text-gold transition-colors">Templates</Link>
         </nav>
 
         <div className="hidden md:flex items-center gap-3">

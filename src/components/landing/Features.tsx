@@ -1,24 +1,24 @@
 import { Sparkles, Clock, MessageSquareHeart, Music2, MapPin, Wand2, Image, Settings2 } from "lucide-react";
 
 const features = [
-  { icon: Sparkles, title: "Scratch to Reveal Date", desc: "Interactive scratch card reveals the wedding date with a delightful surprise" },
-  { icon: Clock, title: "Live Countdown", desc: "Animated countdown timer to your special day" },
-  { icon: MessageSquareHeart, title: "Guest Messaging & Inbox", desc: "Receive messages, attendance confirmations & guest counts" },
-  { icon: Music2, title: "Background Music", desc: "Romantic instrumentals with elegant mute toggle" },
-  { icon: MapPin, title: "Venue with Maps", desc: "Embedded Google Maps for seamless directions" },
-  { icon: Wand2, title: "Premium Animations", desc: "3D door reveals, curtains, sparkles & more" },
-  { icon: Image, title: "Custom Image Upload", desc: "Upload slideshow photos & hero background images" },
-  { icon: Settings2, title: "Full Customization", desc: "Toggle sections, dress codes, events & more" },
+  { icon: Wand2, title: "Bespoke Designs", desc: "Originally crafted layouts, never templated clip-art" },
+  { icon: Sparkles, title: "Beautiful Animations", desc: "3D door reveals, scratch cards, curtains & sparkles" },
+  { icon: MessageSquareHeart, title: "RSVP Management", desc: "Guest replies, attendance counts and a private inbox" },
+  { icon: Music2, title: "Background Music", desc: "Set the mood with an elegant mute toggle" },
+  { icon: MapPin, title: "Event Details & Maps", desc: "Every function with venue and Google Maps directions" },
+  { icon: Clock, title: "Live Countdown", desc: "An animated countdown to your special day" },
+  { icon: Image, title: "Your Photographs", desc: "Upload a gallery and hero imagery of your own" },
+  { icon: Settings2, title: "Mobile-First", desc: "Flawless on every phone, ready for WhatsApp sharing" },
 ];
 
 export const Features = () => (
   <section id="features" className="py-24 md:py-32 bg-gradient-emerald">
     <div className="container">
       <div className="text-center mb-16">
-        <p className="text-gold text-xs tracking-[0.3em] uppercase mb-3">Everything You Need</p>
-        <h2 className="font-display text-4xl md:text-6xl">Premium Features</h2>
+        <p className="text-gold text-xs tracking-[0.3em] uppercase mb-3">Why Zareqia</p>
+        <h2 className="font-display text-4xl md:text-6xl">Designed Around Your Story</h2>
         <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-          Every invitation comes packed with interactive features that make your wedding announcement unforgettable.
+          Everything your celebration needs, wrapped in a design your guests will remember.
         </p>
         <div className="ornament-divider mt-6"><span className="text-gold">✦</span></div>
       </div>

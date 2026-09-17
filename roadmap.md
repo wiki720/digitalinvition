@@ -15,11 +15,11 @@
 - [ ] Checkout page: show Classic & Royal cards.
 - [ ] Admin page: manage both prices + see user plans.
 - [ ] InvitationView: show event type.
-- [ ] Branding: Logo, footer, checkout, index.html, invitation footer.
-- [ ] Landing page content refresh (Hero, Features, Pricing, etc.).
-- [ ] Build & verify.
+- [x] Branding: Logo, footer, checkout, index.html, invitation footer.
+- [x] Landing page content refresh (Hero, Features, Pricing, etc.).
+- [x] Build & verify.
 
 ## Homepage editorial redesign
-- [ ] Rework homepage into original Zareqia premium Indian wedding editorial experience
-- [ ] Add cinematic hero, collection gallery, portfolio, personalization, three-tier pricing, and refined footer
-- [ ] Verify responsive homepage rendering and interactions
+- [x] Rework homepage into original Zareqia premium Indian wedding editorial experience
+- [x] Add cinematic hero, collection gallery, portfolio, personalization, plan pricing, refined footer
+- [x] Verify homepage rendering
